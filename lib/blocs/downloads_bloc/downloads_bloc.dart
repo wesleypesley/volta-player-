@@ -11,12 +11,23 @@ part 'downloads_event.dart';
 part 'downloads_state.dart';
 
 class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
+  final Map<String, StreamSubscription<dynamic>> _subscriptions = {};
+
   DownloadsBloc() : super(DownloadsLoading()) {
     on<LoadDownloads>(_onLoadDownloads);
     on<AddDownload>(_onAddDownload);
     on<CancelDownload>(_onCancelDownload);
     on<RetryDownload>(_onRetryDownload);
     on<UpdateProgress>(_onUpdateProgress);
+  }
+
+  @override
+  Future<void> close() {
+    for (final sub in _subscriptions.values) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+    return super.close();
   }
 
   Future<void> _onLoadDownloads(LoadDownloads event, Emitter<DownloadsState> emit) async {
@@ -47,7 +58,7 @@ class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
   void _startDownloadProcess(DownloadTask initialTask) {
     var currentTask = initialTask;
     
-    DownloadService.instance.download(initialTask.id, initialTask.url, initialTask.format).listen(
+    _subscriptions[initialTask.id] = DownloadService.instance.download(initialTask.id, initialTask.url, initialTask.format).listen(
       (update) {
         currentTask = currentTask.copyWith(
           progress: update.progress,
@@ -59,6 +70,7 @@ class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
         add(UpdateProgress(currentTask));
       },
       onError: (error) {
+        _subscriptions.remove(initialTask.id);
         currentTask = currentTask.copyWith(
           status: DownloadStatus.failed,
           errorMessage: error.toString(),
@@ -67,8 +79,8 @@ class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
         NotificationService.instance.showDownloadFailed(initialTask.url, "Failed");
       },
       onDone: () async {
+        _subscriptions.remove(initialTask.id);
         if (currentTask.status != DownloadStatus.failed) {
-          // If it didn't fail, it's complete
           currentTask = currentTask.copyWith(
             status: DownloadStatus.complete,
             progress: 1.0,
@@ -100,6 +112,7 @@ class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
   }
 
   Future<void> _onCancelDownload(CancelDownload event, Emitter<DownloadsState> emit) async {
+    await _subscriptions.remove(event.taskId)?.cancel();
     DownloadService.instance.cancelDownload(event.taskId);
     
     final allTasks = await DatabaseService.instance.getDownloadTasks();

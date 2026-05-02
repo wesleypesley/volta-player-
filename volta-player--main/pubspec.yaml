@@ -1,0 +1,69 @@
+name: volta_player
+description: Premium Android media downloader and player — Volta Player
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Playback
+  media_kit: ^1.0.0
+  media_kit_libs_android_audio: ^1.3.8
+
+  # Database
+  sqflite: ^2.3.0
+  path: ^1.9.0
+
+  # File & Storage
+  path_provider: ^2.1.2
+
+  # Networking
+
+  # Share Intent (Android)
+  receive_sharing_intent: ^1.8.0
+
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  workmanager: ^0.9.0+3
+
+  # State Management
+  flutter_bloc: ^8.1.3
+  equatable: ^2.0.5
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # UI utilities
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.0
+  freezed: ^2.5.0
+  json_serializable: ^6.8.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
+  min_sdk_android: 26
+
+flutter_native_splash:
+  color: "#F7F7F9"
+  color_dark: "#0D0D0F"
+  image: "assets/icon.png"
+  android: true
+  ios: true
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/yt-dlp/

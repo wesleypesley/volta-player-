@@ -31,12 +31,14 @@ class DownloadsBloc extends Bloc<DownloadsEvent, DownloadsState> {
   }
 
   Future<void> _onLoadDownloads(LoadDownloads event, Emitter<DownloadsState> emit) async {
-    final allTasks = await DatabaseService.instance.getDownloadTasks();
-    
-    final active = allTasks.where((t) => t.status != DownloadStatus.complete && t.status != DownloadStatus.failed).toList();
-    final completed = allTasks.where((t) => t.status == DownloadStatus.complete || t.status == DownloadStatus.failed).toList();
-    
-    emit(DownloadsLoaded(active: active, completed: completed));
+    try {
+      final allTasks = await DatabaseService.instance.getDownloadTasks();
+      final active = allTasks.where((t) => t.status != DownloadStatus.complete && t.status != DownloadStatus.failed).toList();
+      final completed = allTasks.where((t) => t.status == DownloadStatus.complete || t.status == DownloadStatus.failed).toList();
+      emit(DownloadsLoaded(active: active, completed: completed));
+    } catch (_) {
+      emit(const DownloadsLoaded(active: [], completed: []));
+    }
   }
 
   Future<void> _onAddDownload(AddDownload event, Emitter<DownloadsState> emit) async {

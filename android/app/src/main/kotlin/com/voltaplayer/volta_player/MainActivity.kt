@@ -354,15 +354,6 @@ class MainActivity : FlutterActivity() {
                     
                     val job = scope.launch(Dispatchers.IO) {
                         try {
-                            launch(Dispatchers.Main) {
-                                eventSink?.success(mapOf(
-                                    "taskId" to taskId,
-                                    "progress" to 0.0,
-                                    "action" to "Updating yt-dlp"
-                                ))
-                            }
-                            updateYoutubeDLOrThrow()
-
                             val request = YoutubeDLRequest(url)
                             val outDir = workDownloadDirectory()
                             if (!outDir.exists()) outDir.mkdirs()
@@ -371,6 +362,7 @@ class MainActivity : FlutterActivity() {
                             request.addOption("--newline")
                             request.addOption("--no-playlist")
                             request.addOption("--restrict-filenames")
+                            request.addOption("--no-warnings")
                             
                             if (format == "audioOnly") {
                                 request.addOption("-x")
